@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mnuItemFC"
+        android:icon="@drawable/temp_c"
+        android:showAsAction="ifRoom"
+        android:title="@string/strFC"/>
+
+    <item
+        android:id="@+id/menuItemAdd"
+        android:icon="@drawable/plus6"
+        android:showAsAction="ifRoom"
+        android:title="@string/strAddCity"/>
+
+</menu>

@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MyWeather</string>
+    <string name="strAddCity">Add a City</string>
+    <string name="strRemoveCity">Remove a City</string>
+    <string name="strMinus">-</string>
+    <string name="strLocal">City Name (local)</string>
+    <string name="strCondition">Condition</string>
+    <string name="strTemp">9999</string>
+    <string name="strHigh">9999 / 9999</string>
+    <string name="strRain">Chance of Rain: 99%</string>
+    <string name="strSpace"> </string>
+    <string name="strFC">F/C</string>
+</resources>
