@@ -13,9 +13,9 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -66,12 +66,12 @@ public class MainActivity extends Activity {
 
     ScrollView scrollView;
     TableLayout tlWeatherL;
-    TableRow trCity1TopL;
+    TableRow trCityTopL;
     TextView textViewCityL;
     ImageButton buttonTempL;
     ImageButton buttonNullL;
     ImageButton buttonRemoveL;
-    TableRow trCity1BottomL;
+    TableRow trCityBottomL;
     GridLayout gridLayoutL;
     ImageButton imageGraphicL;
     TextView textViewConditionL;
@@ -87,12 +87,14 @@ public class MainActivity extends Activity {
 
         scrollView = findViewById(R.id.scrollView);
         tlWeatherL = findViewById(R.id.tlWeatherL);
-        trCity1TopL = findViewById(R.id.trCity1TopL);
+
+        trCityTopL = findViewById(R.id.trCityTopL);
         textViewCityL = findViewById(R.id.textViewCityL);
         buttonTempL = findViewById(R.id.buttonTempL);
         buttonNullL = findViewById(R.id.buttonNullL);
         buttonRemoveL = findViewById(R.id.buttonRemoveL);
-        trCity1BottomL = findViewById(R.id.trCity1BottomL);
+        trCityBottomL = findViewById(R.id.trCityBottomL);
+
         gridLayoutL = findViewById(R.id.gridLayoutL);
         imageGraphicL = findViewById(R.id.imageGraphicL);
         textViewConditionL = findViewById(R.id.textViewConditionL);
@@ -100,6 +102,21 @@ public class MainActivity extends Activity {
         textViewRainL = findViewById(R.id.textViewRainL);
         textViewHighL = findViewById(R.id.textViewHighL);
         textViewSpacerL = findViewById(R.id.textViewSpacerL);
+
+    }
+
+    public void onClickRemove(View v) {
+
+        if (v.getId() == R.id.buttonRemoveL) {
+        }
+    }
+
+    public void onClickTemp(View v) {
+
+        if (v.getId() == R.id.buttonTempL) {
+//            textViewTempL.setText(weather.getTemperature());
+//            textViewHighL.setText(weather.getMin() + " / " + weather.getMax());
+        }
     }
 
     @Override
@@ -127,7 +144,7 @@ public class MainActivity extends Activity {
         super.onResume();
         Log.d(LOGCAT_TAG, "onResume() called");
         if(mUseLocation) getWeatherForCurrentLocation();
-        getWeatherForNewCity("Naperville");
+        getWeatherForNewCity("Davis");
     }
 
     @Override
@@ -255,7 +272,6 @@ public class MainActivity extends Activity {
 
                 Log.e(LOGCAT_TAG, "Fail " + e.toString());
                 Toast.makeText(MainActivity.this, "Request Failed", Toast.LENGTH_SHORT).show();
-
                 Log.d(LOGCAT_TAG, "Status code " + statusCode);
                 Log.d(LOGCAT_TAG, "Here's what we got instead " + response.toString());
             }
