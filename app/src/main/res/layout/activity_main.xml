@@ -29,7 +29,7 @@
                 android:id="@+id/trCityTopL"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#343d46">
+                android:background="@color/colorDarkGray">
 
                 <TextView
                     android:id="@+id/textViewCityL"
@@ -48,22 +48,22 @@
                     android:layout_height="30dp"
                     android:background="@drawable/temp_c"
                     android:contentDescription="@string/app_name"
-                    android:onClick="onClickTemp"/>
+                    android:tooltipText="Convert"/>
 
                 <ImageButton
                     android:id="@+id/buttonNullL"
                     android:layout_width="10dp"
                     android:layout_height="30dp"
-                    android:background="#343d46"
+                    android:background="@color/colorDarkGray"
                     android:contentDescription="@string/app_name"/>
 
                 <ImageButton
                     android:id="@+id/buttonRemoveL"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@android:drawable/ic_menu_delete"
+                    android:background="@drawable/ic_menu_delete"
                     android:contentDescription="@string/app_name"
-                    android:onClick="onClickRemove"/>
+                    android:tooltipText="Remove"/>
 
             </TableRow>
 
@@ -97,7 +97,7 @@
                         android:layout_height="wrap_content"
                         android:layout_columnSpan="3"
                         android:text="@string/strCondition"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/colorBlack"
                         android:textSize="24sp"/>
 
                     <TextView
@@ -109,7 +109,7 @@
                         android:paddingEnd="15dp"
                         android:paddingStart="5dp"
                         android:text="@string/strTemp"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/colorBlack"
                         android:textSize="24sp"/>
 
                     <TextView
@@ -120,7 +120,7 @@
                         android:paddingEnd="5dp"
                         android:paddingStart="5dp"
                         android:text="@string/strRain"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/colorBlack"
                         android:textSize="14sp"/>
 
                     <TextView
@@ -131,7 +131,7 @@
                         android:paddingEnd="15dp"
                         android:paddingStart="5dp"
                         android:text="@string/strHigh"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/colorBlack"
                         android:textSize="14sp"/>
 
                     <TextView
@@ -139,130 +139,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_columnSpan="4"
-                        android:background="@android:color/black"
-                        android:text="@string/strSpace"/>
-
-                </GridLayout>
-
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/trCity1Top1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#343d46">
-
-                <TextView
-                    android:id="@+id/textViewCity1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:paddingEnd="5dp"
-                    android:paddingStart="5dp"
-                    android:text="@string/strLocal"
-                    android:textColor="@android:color/background_light"
-                    android:textSize="18sp"/>
-
-                <ImageButton
-                    android:id="@+id/buttonTemp1"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:background="@drawable/temp_c"
-                    android:contentDescription="@string/app_name"
-                    android:onClick="onClickTemp"/>
-
-                <ImageButton
-                    android:id="@+id/buttonNull1"
-                    android:layout_width="10dp"
-                    android:layout_height="30dp"
-                    android:background="#343d46"
-                    android:contentDescription="@string/app_name"/>
-
-                <ImageButton
-                    android:id="@+id/buttonRemove1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:drawable/ic_menu_delete"
-                    android:contentDescription="@string/app_name"
-                    android:onClick="onClickRemove"/>
-
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/trCity1Bottom1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/colorLightGray">
-
-                <GridLayout
-                    android:id="@+id/gridLayout1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:columnCount="5"
-                    android:paddingLeft="5dp"
-                    android:paddingRight="5dp"
-                    android:rowCount="4">
-
-                    <ImageButton
-                        android:id="@+id/imageGraphic1"
-                        android:layout_width="66dp"
-                        android:layout_height="56dp"
-                        android:layout_columnSpan="1"
-                        android:layout_rowSpan="2"
-                        android:contentDescription="@string/app_name"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/fog"/>
-
-                    <TextView
-                        android:id="@+id/textViewCondition1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_columnSpan="3"
-                        android:text="@string/strCondition"
-                        android:textColor="@android:color/black"
-                        android:textSize="24sp"/>
-
-                    <TextView
-                        android:id="@+id/textViewTemp1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:layout_rowSpan="1"
-                        android:paddingEnd="15dp"
-                        android:paddingStart="5dp"
-                        android:text="@string/strTemp"
-                        android:textColor="@android:color/black"
-                        android:textSize="24sp"/>
-
-                    <TextView
-                        android:id="@+id/textViewRain1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_columnSpan="3"
-                        android:paddingEnd="5dp"
-                        android:paddingStart="5dp"
-                        android:text="@string/strRain"
-                        android:textColor="@android:color/black"
-                        android:textSize="14sp"/>
-
-                    <TextView
-                        android:id="@+id/textViewHigh1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:paddingEnd="15dp"
-                        android:paddingStart="5dp"
-                        android:text="@string/strHigh"
-                        android:textColor="@android:color/black"
-                        android:textSize="14sp"/>
-
-                    <TextView
-                        android:id="@+id/textViewSpacer1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_columnSpan="4"
-                        android:background="@android:color/black"
+                        android:background="@color/colorWhite"
                         android:text="@string/strSpace"/>
 
                 </GridLayout>

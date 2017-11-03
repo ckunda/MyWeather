@@ -4,18 +4,24 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -30,7 +36,8 @@ import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity
+implements View.OnClickListener {
 
     // Request Codes:
     final int REQUEST_CODE = 123; // Request Code for permission request callback
@@ -49,6 +56,7 @@ public class MainActivity extends Activity {
     final float MIN_DISTANCE = 1000;
 
     final String LOGCAT_TAG = "MyWeather";
+    final String CLONED = "CLONED";
 
     // Set LOCATION_PROVIDER here. Using GPS_Provider for Fine Location (good for emulator):
     // Recommend using LocationManager.NETWORK_PROVIDER on physical devices (reliable & fast!)
@@ -56,9 +64,6 @@ public class MainActivity extends Activity {
 
     // Member Variables:
     boolean mUseLocation = true;
-//    TextView mCityLabel;
-//    ImageView mWeatherImage;
-//    TextView mTemperatureLabel;
 
     // Declaring a LocationManager and a LocationListener here:
     LocationManager mLocationManager;
@@ -93,8 +98,8 @@ public class MainActivity extends Activity {
         buttonTempL = findViewById(R.id.buttonTempL);
         buttonNullL = findViewById(R.id.buttonNullL);
         buttonRemoveL = findViewById(R.id.buttonRemoveL);
-        trCityBottomL = findViewById(R.id.trCityBottomL);
 
+        trCityBottomL = findViewById(R.id.trCityBottomL);
         gridLayoutL = findViewById(R.id.gridLayoutL);
         imageGraphicL = findViewById(R.id.imageGraphicL);
         textViewConditionL = findViewById(R.id.textViewConditionL);
@@ -103,20 +108,17 @@ public class MainActivity extends Activity {
         textViewHighL = findViewById(R.id.textViewHighL);
         textViewSpacerL = findViewById(R.id.textViewSpacerL);
 
+        // Hide the first weather block
+//        trCityTopL.setVisibility(View.GONE);
+//        trCityBottomL.setVisibility(View.GONE);
+
     }
 
-    public void onClickRemove(View v) {
-
-        if (v.getId() == R.id.buttonRemoveL) {
-        }
-    }
-
-    public void onClickTemp(View v) {
-
-        if (v.getId() == R.id.buttonTempL) {
-//            textViewTempL.setText(weather.getTemperature());
-//            textViewHighL.setText(weather.getMin() + " / " + weather.getMax());
-        }
+    @Override
+    public void onClick(View v) {
+        ImageButton ibTemp = findViewById(v.getId());
+        String cityName = ibTemp.getTag().toString();
+        Toast.makeText(getApplicationContext(), cityName, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -143,8 +145,13 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Log.d(LOGCAT_TAG, "onResume() called");
-        if(mUseLocation) getWeatherForCurrentLocation();
-        getWeatherForNewCity("Davis");
+        removeCityWidgets();
+        if (mUseLocation) getWeatherForCurrentLocation();
+        getWeatherForNewCity("Jaipur");
+        getWeatherForNewCity("woodland");
+        getWeatherForNewCity("Chicago");
+        getWeatherForNewCity("London");
+
     }
 
     @Override
@@ -203,7 +210,7 @@ public class MainActivity extends Activity {
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
             return;
         }
 
@@ -264,7 +271,7 @@ public class MainActivity extends Activity {
                 Log.d(LOGCAT_TAG, "Success! JSON: " + response.toString());
                 Log.d(LOGCAT_TAG, "Status code " + statusCode);
                 WeatherDataModel weatherData = WeatherDataModel.fromJson(response);
-                updateUI(weatherData);
+                addCityWidgets(weatherData);
             }
 
             @Override
@@ -278,16 +285,169 @@ public class MainActivity extends Activity {
         });
     }
 
-    // Updates the information shown on screen.
-    private void updateUI(WeatherDataModel weather) {
-        textViewTempL.setText(weather.getTemperature());
-        textViewHighL.setText(weather.getMin() + " / " + weather.getMax());
-        textViewCityL.setText(weather.getCity());
-        textViewConditionL.setText(weather.getCondition());
-//        textViewRainL.setText("Chance of Rain: " + weather.getRain());
+    // Remove all added widgets
+    public void removeCityWidgets() {
 
-        // Update the icon based on the resource id of the image in the drawable folder.
-        int resourceID = getResources().getIdentifier(weather.getIconName(), "drawable", getPackageName());
-        imageGraphicL.setImageResource(resourceID);
+        // Get the entire layout and remove previously cloned widgets
+        TableLayout tableL = findViewById(R.id.tlWeatherL);
+        int childCount = tableL.getChildCount();
+
+        // Remove all rows except the first 2 rows
+        if (childCount > 2) {
+            tableL.removeViews(2, childCount - 1);
+        }
+        Log.d(LOGCAT_TAG, "Remove, Table child count: " + tableL.getChildCount());
+
     }
+    // Duplicate all widgets that are required to add a new city
+    public void addCityWidgets(WeatherDataModel weather) {
+
+        TableLayout tableL = findViewById(R.id.tlWeatherL);
+        Log.d(LOGCAT_TAG, "Table child count: " + tableL.getChildCount());
+
+        // Create 1st Row
+        TableRow tableRow1 = new TableRow(this);
+        TableRow tr = findViewById(R.id.trCityTopL);
+        ViewGroup.LayoutParams aParams = tr.getLayoutParams();
+        tableRow1.setLayoutParams(aParams);
+        tableRow1.setBackgroundColor(ContextCompat.getColor(this, R.color.colorDarkGray));
+        tableRow1.setTag(CLONED);
+
+        // City
+        TextView textViewCity = new TextView(this);
+        TextView tvTemp = findViewById(R.id.textViewCityL);
+        aParams = tvTemp.getLayoutParams();
+        textViewCity.setLayoutParams(aParams);
+        textViewCity.setPaddingRelative(5, 0, 5, 0);
+        textViewCity.setText(weather.getCity());
+        textViewCity.setTextColor(ContextCompat.getColor(this, R.color.colorWhite));
+        textViewCity.setTextSize(18);
+
+        // Temperature toggle between c/f
+        ImageButton buttonTemp = new ImageButton(this);
+        ImageButton ibTemp = findViewById(R.id.buttonTempL);
+        aParams = ibTemp.getLayoutParams();
+        buttonTemp.setLayoutParams(aParams);
+        buttonTemp.setBackground(getDrawable(R.drawable.temp_c));
+        buttonTemp.setId(View.generateViewId());
+        buttonTemp.setTag("Convert:" + weather.getCity());
+        buttonTemp.setOnClickListener(this);
+
+        // Null placeholder
+        ImageButton buttonNull = new ImageButton(this);
+        ibTemp = findViewById(R.id.buttonNullL);
+        aParams = ibTemp.getLayoutParams();
+        buttonNull.setLayoutParams(aParams);
+
+        // Remove
+        ImageButton buttonRemove = new ImageButton(this);
+        ibTemp = findViewById(R.id.buttonRemoveL);
+        aParams = ibTemp.getLayoutParams();
+        buttonRemove.setLayoutParams(aParams);
+        buttonRemove.setBackground(getDrawable(R.drawable.ic_menu_delete));
+        buttonRemove.setId(View.generateViewId());
+        buttonRemove.setTag("Remove:" + weather.getCity());
+        buttonRemove.setOnClickListener(this);
+
+        // Add columns to table row
+        tableRow1.addView(textViewCity);
+        tableRow1.addView(buttonTemp);
+        tableRow1.addView(buttonNull);
+        tableRow1.addView(buttonRemove);
+
+        // Create 2nd row
+        TableRow tableRow2 = new TableRow(this);
+        tr = findViewById(R.id.trCityBottomL);
+        aParams = tr.getLayoutParams();
+        tableRow2.setLayoutParams(aParams);
+        tableRow2.setBackgroundColor(Color.LTGRAY);
+        tableRow2.setTag(CLONED);
+
+        // Create grid layout
+        GridLayout gl = new GridLayout(this);
+        GridLayout glTemp = findViewById(R.id.gridLayoutL);
+        aParams = glTemp.getLayoutParams();
+        gl.setLayoutParams(aParams);
+        gl.setColumnCount(5);
+        gl.setRowCount(4);
+
+        // Weather condition image
+        ImageButton imageGraphic = new ImageButton(this);
+        imageGraphic.setBackground(getDrawable(R.drawable.sunny));
+        ibTemp = findViewById(R.id.imageGraphicL);
+        aParams = ibTemp.getLayoutParams();
+        imageGraphic.setLayoutParams(aParams);
+        int resourceID = getResources().getIdentifier(weather.getIconName(), "drawable", getPackageName());
+        imageGraphic.setImageResource(resourceID);
+        imageGraphic.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+        // Weather condition
+        TextView textViewCondition = new TextView(this);
+        tvTemp = findViewById(R.id.textViewConditionL);
+        aParams = tvTemp.getLayoutParams();
+        textViewCondition.setLayoutParams(aParams);
+        textViewCondition.setText(weather.getCondition());
+        textViewCondition.setTextColor(ContextCompat.getColor(this, R.color.colorBlack));
+        textViewCondition.setTextSize(24);
+
+        // Temperature
+        TextView textViewTemp = new TextView(this);
+        tvTemp = findViewById(R.id.textViewTempL);
+        aParams = tvTemp.getLayoutParams();
+        textViewTemp.setLayoutParams(aParams);
+        textViewTemp.setText(weather.getTemperature());
+        textViewTemp.setTag(weather.getTemperatureC());
+        textViewTemp.setTextColor(ContextCompat.getColor(this, R.color.colorBlack));
+        textViewTemp.setTextSize(24);
+        textViewTemp.setPaddingRelative(5, 0, 15, 0);
+
+        // Chance of rain
+        TextView textViewRain = new TextView(this);
+        tvTemp = findViewById(R.id.textViewRainL);
+        aParams = tvTemp.getLayoutParams();
+        textViewRain.setLayoutParams(aParams);
+        textViewRain.setText(R.string.strRain);
+        textViewRain.setTextColor(ContextCompat.getColor(this, R.color.colorBlack));
+        textViewRain.setTextSize(14);
+        textViewRain.setPaddingRelative(5, 0, 5, 0);
+
+        // High / Low
+        TextView textViewHigh = new TextView(this);
+        tvTemp = findViewById(R.id.textViewHighL);
+        aParams = tvTemp.getLayoutParams();
+        textViewHigh.setLayoutParams(aParams);
+        textViewHigh.setText(weather.getMin() + " / " + weather.getMax());
+        textViewHigh.setTag(weather.getMinC() + " / " + weather.getMaxC());
+        textViewHigh.setTextColor(ContextCompat.getColor(this, R.color.colorBlack));
+        textViewHigh.setTextSize(14);
+        textViewHigh.setPaddingRelative(5, 0, 5, 0);
+
+        // Blank line
+        TextView textViewSpacer = new TextView(this);
+        tvTemp = findViewById(R.id.textViewSpacerL);
+        aParams = tvTemp.getLayoutParams();
+        textViewSpacer.setLayoutParams(aParams);
+        textViewSpacer.setText(R.string.strSpace);
+        textViewSpacer.setBackgroundColor(Color.BLACK);
+
+        // Add columns to grid layout
+        gl.addView(imageGraphic);
+        gl.addView(textViewCondition);
+        gl.addView(textViewTemp);
+        gl.addView(textViewRain);
+        gl.addView(textViewHigh);
+        gl.addView(textViewSpacer);
+
+        // Add grid layout to table row2
+        tableRow2.addView(gl);
+
+        // Add both table rows to the existing table
+        TableLayout tl = findViewById(R.id.tlWeatherL);
+        tl.addView(tableRow1);
+        tl.addView(tableRow2);
+
+        Log.e(LOGCAT_TAG, "addCityWidgets");
+
+    }
+
 }
