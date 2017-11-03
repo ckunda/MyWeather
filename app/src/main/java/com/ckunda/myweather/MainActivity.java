@@ -10,11 +10,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -109,8 +107,8 @@ implements View.OnClickListener {
         textViewSpacerL = findViewById(R.id.textViewSpacerL);
 
         // Hide the first weather block
-//        trCityTopL.setVisibility(View.GONE);
-//        trCityBottomL.setVisibility(View.GONE);
+        trCityTopL.setVisibility(View.GONE);
+        trCityBottomL.setVisibility(View.GONE);
 
     }
 
@@ -293,8 +291,8 @@ implements View.OnClickListener {
         int childCount = tableL.getChildCount();
 
         // Remove all rows except the first 2 rows
-        if (childCount > 2) {
-            tableL.removeViews(2, childCount - 1);
+        for (int i = childCount-1; i > 1; i--) {
+            tableL.removeViewAt(i);
         }
         Log.d(LOGCAT_TAG, "Remove, Table child count: " + tableL.getChildCount());
 
