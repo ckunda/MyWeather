@@ -3,20 +3,24 @@ package com.ckunda.myweather;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -25,12 +29,15 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.AlertDialog;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -54,7 +61,6 @@ implements View.OnClickListener {
     final float MIN_DISTANCE = 1000;
 
     final String LOGCAT_TAG = "MyWeather";
-    final String CLONED = "CLONED";
 
     // Set LOCATION_PROVIDER here. Using GPS_Provider for Fine Location (good for emulator):
     // Recommend using LocationManager.NETWORK_PROVIDER on physical devices (reliable & fast!)
@@ -63,6 +69,8 @@ implements View.OnClickListener {
     // Member Variables:
     boolean mUseLocation = true;
 
+    // Array list to store cities
+    ArrayList<String> cities = new ArrayList<>();
     // Declaring a LocationManager and a LocationListener here:
     LocationManager mLocationManager;
     LocationListener mLocationListener;
@@ -110,6 +118,10 @@ implements View.OnClickListener {
         trCityTopL.setVisibility(View.GONE);
         trCityBottomL.setVisibility(View.GONE);
 
+        // Add some cities
+//        cities.add("woodland");
+//        cities.add("folsom");
+
     }
 
     @Override
@@ -117,6 +129,11 @@ implements View.OnClickListener {
         ImageButton ibTemp = findViewById(v.getId());
         String cityName = ibTemp.getTag().toString();
         Toast.makeText(getApplicationContext(), cityName, Toast.LENGTH_SHORT).show();
+        final String[] separated = cityName.split(":");
+        if (separated[0].equals("Remove"))
+            removeAcity(separated[1].trim());
+        if (separated[0].equals("Convert"))
+            convertAcity(separated[1].trim());
     }
 
     @Override
@@ -130,6 +147,7 @@ implements View.OnClickListener {
         switch (item.getItemId()) {
             case R.id.menuItemAdd:
                 Toast.makeText(getApplicationContext(), getString(R.string.strAddCity), Toast.LENGTH_SHORT).show();
+                addACity();
                 return true;
             case R.id.mnuItemFC:
                 Toast.makeText(getApplicationContext(), getString(R.string.strFC), Toast.LENGTH_SHORT).show();
@@ -142,14 +160,9 @@ implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(LOGCAT_TAG, "onResume() called");
-        removeCityWidgets();
-        if (mUseLocation) getWeatherForCurrentLocation();
-        getWeatherForNewCity("Jaipur");
-        getWeatherForNewCity("woodland");
-        getWeatherForNewCity("Chicago");
-        getWeatherForNewCity("London");
 
+        Log.d(LOGCAT_TAG, "onResume() called");
+        loadPage();
     }
 
     @Override
@@ -157,6 +170,15 @@ implements View.OnClickListener {
         super.onPause();
 
         if (mLocationManager != null) mLocationManager.removeUpdates(mLocationListener);
+    }
+
+    private void loadPage() {
+
+        removeCityWidgets();
+        if (mUseLocation) getWeatherForCurrentLocation();
+        for (int i = 0; i < cities.size(); i++) {
+            getWeatherForNewCity(cities.get(i));
+        }
     }
 
     // Location Listener callbacks here, when the location has changed.
@@ -309,7 +331,6 @@ implements View.OnClickListener {
         ViewGroup.LayoutParams aParams = tr.getLayoutParams();
         tableRow1.setLayoutParams(aParams);
         tableRow1.setBackgroundColor(ContextCompat.getColor(this, R.color.colorDarkGray));
-        tableRow1.setTag(CLONED);
 
         // City
         TextView textViewCity = new TextView(this);
@@ -320,6 +341,14 @@ implements View.OnClickListener {
         textViewCity.setText(weather.getCity());
         textViewCity.setTextColor(ContextCompat.getColor(this, R.color.colorWhite));
         textViewCity.setTextSize(18);
+
+        // Add to array if not in array
+        boolean notFound = true;
+        for (String city : cities) {
+            if (city.equals(weather.getCity().toUpperCase())) notFound = false;
+        }
+        if (notFound)
+            cities.add(weather.getCity().toUpperCase());
 
         // Temperature toggle between c/f
         ImageButton buttonTemp = new ImageButton(this);
@@ -359,7 +388,6 @@ implements View.OnClickListener {
         aParams = tr.getLayoutParams();
         tableRow2.setLayoutParams(aParams);
         tableRow2.setBackgroundColor(Color.LTGRAY);
-        tableRow2.setTag(CLONED);
 
         // Create grid layout
         GridLayout gl = new GridLayout(this);
@@ -448,4 +476,58 @@ implements View.OnClickListener {
 
     }
 
+    public void addACity() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter a City");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                getWeatherForNewCity(input.getText().toString().toUpperCase());
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public void removeAcity(String cityName) {
+
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        final String city2Delete = cityName;
+        builder.setTitle("Delete city")
+                .setMessage("Are you sure you want to delete " + cityName + "?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        cities.remove(city2Delete.toUpperCase());
+                        loadPage();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    public void convertAcity(String cityName) {
+
+    }
 }
