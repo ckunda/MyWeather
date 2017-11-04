@@ -4,11 +4,14 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -38,6 +41,7 @@ import com.loopj.android.http.RequestParams;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -200,6 +204,26 @@ implements View.OnClickListener {
         }
     }
 
+    public void displayMap(String cityName) {
+
+        // Map point based on address
+        // Build the intent
+
+        // Uri location = Uri.parse("geo:0,0?q=1600+Amphitheatre+Parkway,+Mountain+View,+California");
+        Uri location = Uri.parse("geo:0,0?q=" + cityName);
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+
+        // Verify it resolves
+        PackageManager packageManager = getPackageManager();
+        List<ResolveInfo> activities = packageManager.queryIntentActivities(mapIntent, 0);
+        boolean isIntentSafe = activities.size() > 0;
+
+        // Start an activity if it's safe
+        if (isIntentSafe) {
+            startActivity(mapIntent);
+        }
+    }
+
     // Location Listener callbacks here, when the location has changed.
     private void getWeatherForCurrentLocation() {
 
@@ -341,9 +365,6 @@ implements View.OnClickListener {
     // Duplicate all widgets that are required to add a new city
     public void addCityWidgets(WeatherDataModel weather) {
 
-        TableLayout tableL = findViewById(R.id.tlWeatherL);
-        Log.d(LOGCAT_TAG, "Table child count: " + tableL.getChildCount());
-
         // Create 1st Row
         TableRow tableRow1 = new TableRow(this);
         TableRow tr = findViewById(R.id.trCityTopL);
@@ -358,10 +379,18 @@ implements View.OnClickListener {
         textViewCity.setLayoutParams(aParams);
         textViewCity.setPaddingRelative(5, 0, 5, 0);
         textViewCity.setText(weather.getCity());
+        textViewCity.setTag(weather.getCity());
         textViewCity.setTextColor(ContextCompat.getColor(this, R.color.colorWhite));
         textViewCity.setTextSize(18);
+        textViewCity.isClickable();
+        textViewCity.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                displayMap(v.getTag().toString());
+                                            }
+                                        });
 
-        // Add to array if not in array
+                // Add to array if not in array
         boolean notFound = true;
         for (String city : cities) {
             if (city.equals(weather.getCity().toUpperCase())) notFound = false;
@@ -545,11 +574,7 @@ implements View.OnClickListener {
     public void removeAcity(String cityName) {
 
         AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(this);
-        }
+        builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
         final String city2Delete = cityName;
         builder.setTitle("Delete city")
                 .setMessage("Are you sure you want to delete " + cityName + "?")
