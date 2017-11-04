@@ -68,6 +68,7 @@ implements View.OnClickListener {
 
     // Member Variables:
     boolean mUseLocation = true;
+    boolean mFC = true;
 
     // Array list to store cities
     ArrayList<String> cities = new ArrayList<>();
@@ -126,32 +127,50 @@ implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+
         ImageButton ibTemp = findViewById(v.getId());
         String cityName = ibTemp.getTag().toString();
         Toast.makeText(getApplicationContext(), cityName, Toast.LENGTH_SHORT).show();
-        final String[] separated = cityName.split(":");
+
+        String[] separated = cityName.split(":");
         if (separated[0].equals("Remove"))
             removeAcity(separated[1].trim());
-        if (separated[0].equals("Convert"))
-            convertAcity(separated[1].trim());
+        else
+            convertAcity(cityName, v);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch (item.getItemId()) {
+
             case R.id.menuItemAdd:
                 Toast.makeText(getApplicationContext(), getString(R.string.strAddCity), Toast.LENGTH_SHORT).show();
                 addACity();
                 return true;
+
             case R.id.mnuItemFC:
                 Toast.makeText(getApplicationContext(), getString(R.string.strFC), Toast.LENGTH_SHORT).show();
+
+                // Toggle between F and C globally
+                if (mFC) {
+                    mFC = false;
+                    item.setIcon(R.drawable.temp_f);
+                }
+                else {
+                    mFC = true;
+                    item.setIcon(R.drawable.temp_c);
+                }
+                loadPage();
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -355,9 +374,15 @@ implements View.OnClickListener {
         ImageButton ibTemp = findViewById(R.id.buttonTempL);
         aParams = ibTemp.getLayoutParams();
         buttonTemp.setLayoutParams(aParams);
-        buttonTemp.setBackground(getDrawable(R.drawable.temp_c));
         buttonTemp.setId(View.generateViewId());
-        buttonTemp.setTag("Convert:" + weather.getCity());
+        if (mFC) {
+            buttonTemp.setBackground(getDrawable(R.drawable.temp_c));
+            buttonTemp.setTag("F:" + weather.getCity());
+        }
+        else {
+            buttonTemp.setBackground(getDrawable(R.drawable.temp_f));
+            buttonTemp.setTag("C:" + weather.getCity());
+        }
         buttonTemp.setOnClickListener(this);
 
         // Null placeholder
@@ -421,18 +446,26 @@ implements View.OnClickListener {
         tvTemp = findViewById(R.id.textViewTempL);
         aParams = tvTemp.getLayoutParams();
         textViewTemp.setLayoutParams(aParams);
-        textViewTemp.setText(weather.getTemperature());
-        textViewTemp.setTag(weather.getTemperatureC());
+        if (mFC) {
+            textViewTemp.setText(weather.getTemperature());
+            textViewTemp.setTag(weather.getTemperatureC());
+        }
+        else {
+            textViewTemp.setText(weather.getTemperatureC());
+            textViewTemp.setTag(weather.getTemperature());
+        }
         textViewTemp.setTextColor(ContextCompat.getColor(this, R.color.colorBlack));
         textViewTemp.setTextSize(24);
         textViewTemp.setPaddingRelative(5, 0, 15, 0);
+        textViewTemp.setId(View.generateViewId());
+        buttonTemp.setTag(buttonTemp.getTag().toString() + ":" + textViewTemp.getId());
 
         // Chance of rain
         TextView textViewRain = new TextView(this);
         tvTemp = findViewById(R.id.textViewRainL);
         aParams = tvTemp.getLayoutParams();
         textViewRain.setLayoutParams(aParams);
-        textViewRain.setText(R.string.strRain);
+        textViewRain.setText(weather.getRain());
         textViewRain.setTextColor(ContextCompat.getColor(this, R.color.colorBlack));
         textViewRain.setTextSize(14);
         textViewRain.setPaddingRelative(5, 0, 5, 0);
@@ -442,11 +475,19 @@ implements View.OnClickListener {
         tvTemp = findViewById(R.id.textViewHighL);
         aParams = tvTemp.getLayoutParams();
         textViewHigh.setLayoutParams(aParams);
-        textViewHigh.setText(weather.getMin() + " / " + weather.getMax());
-        textViewHigh.setTag(weather.getMinC() + " / " + weather.getMaxC());
+        if (mFC) {
+            textViewHigh.setText(weather.getMin() + " / " + weather.getMax());
+            textViewHigh.setTag(weather.getMinC() + " / " + weather.getMaxC());
+        }
+        else {
+            textViewHigh.setText(weather.getMinC() + " / " + weather.getMaxC());
+            textViewHigh.setTag(weather.getMin() + " / " + weather.getMax());
+        }
         textViewHigh.setTextColor(ContextCompat.getColor(this, R.color.colorBlack));
         textViewHigh.setTextSize(14);
         textViewHigh.setPaddingRelative(5, 0, 5, 0);
+        textViewHigh.setId(View.generateViewId());
+        buttonTemp.setTag(buttonTemp.getTag().toString() + ":" + textViewHigh.getId());
 
         // Blank line
         TextView textViewSpacer = new TextView(this);
@@ -527,7 +568,27 @@ implements View.OnClickListener {
                 .show();
     }
 
-    public void convertAcity(String cityName) {
+    public void convertAcity(String cityName, View v) {
 
+        String[] separated = cityName.split(":");
+        ImageButton ibTemp = (ImageButton) v;
+        TextView tvTemp = findViewById(Integer.parseInt(separated[2]));
+        TextView tvTempH = findViewById(Integer.parseInt(separated[3]));
+        if (separated[0].charAt(0) == "F".charAt(0)) {
+            ibTemp.setBackground(getDrawable(R.drawable.temp_f));
+            ibTemp.setTag("C:" +
+            separated[1] + ":" + separated[2] + ":" + separated[3]);
+        }
+        else {
+            ibTemp.setBackground(getDrawable(R.drawable.temp_c));
+            ibTemp.setTag("F:" +
+                    separated[1] + ":" + separated[2] + ":" + separated[3]);
+        }
+        String tempTag = tvTemp.getTag().toString();
+        tvTemp.setTag(tvTemp.getText().toString());
+        tvTemp.setText(tempTag);
+        tempTag = tvTempH.getTag().toString();
+        tvTempH.setTag(tvTempH.getText().toString());
+        tvTempH.setText(tempTag);
     }
 }

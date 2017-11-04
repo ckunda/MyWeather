@@ -126,7 +126,7 @@ public class WeatherDataModel {
     }
 
     public String getRain() {
-        return mRain;
+        return "  ";
     }
 
 }
