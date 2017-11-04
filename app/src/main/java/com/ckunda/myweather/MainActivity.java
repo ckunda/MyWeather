@@ -12,7 +12,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -208,7 +207,6 @@ implements View.OnClickListener {
 
         // Map point based on address
         // Build the intent
-
         // Uri location = Uri.parse("geo:0,0?q=1600+Amphitheatre+Parkway,+Mountain+View,+California");
         Uri location = Uri.parse("geo:0,0?q=" + cityName);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
