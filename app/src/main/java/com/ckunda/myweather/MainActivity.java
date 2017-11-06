@@ -40,9 +40,13 @@ import com.loopj.android.http.RequestParams;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import cz.msebera.android.httpclient.Header;
+
+import android.content.SharedPreferences;
 
 public class MainActivity extends Activity
 implements View.OnClickListener {
@@ -73,8 +77,13 @@ implements View.OnClickListener {
     boolean mUseLocation = true;
     boolean mFC = true;
 
+    // define the SharedPreferences object
+    private SharedPreferences savedValues;
+
     // Array list to store cities
     ArrayList<String> cities = new ArrayList<>();
+    ArrayList<String> citiesOnScreen = new ArrayList<>();
+
     // Declaring a LocationManager and a LocationListener here:
     LocationManager mLocationManager;
     LocationListener mLocationListener;
@@ -122,9 +131,7 @@ implements View.OnClickListener {
         trCityTopL.setVisibility(View.GONE);
         trCityBottomL.setVisibility(View.GONE);
 
-        // Add some cities
-//        cities.add("woodland");
-//        cities.add("folsom");
+        savedValues = getSharedPreferences("App_settings", MODE_PRIVATE);
 
     }
 
@@ -184,12 +191,28 @@ implements View.OnClickListener {
         super.onResume();
 
         Log.d(LOGCAT_TAG, "onResume() called");
+        try {
+            Set<String> set = savedValues.getStringSet("CITIES", null);
+            cities.clear();
+            cities.addAll(set);
+            Log.d(LOGCAT_TAG, "Restored: " + set);
+        } catch (Exception e) {
+//            throw new RuntimeException(e);
+        }
+
         loadPage();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+
+        SharedPreferences.Editor editor = savedValues.edit();
+        Set<String> set = new HashSet<String>();
+        set.addAll(cities);
+        editor.putStringSet("CITIES", set);
+        editor.apply();
+        Log.d(LOGCAT_TAG,"Saved: " + set);
 
         if (mLocationManager != null) mLocationManager.removeUpdates(mLocationListener);
     }
@@ -198,14 +221,12 @@ implements View.OnClickListener {
 
         removeCityWidgets();
         if (mUseLocation) getWeatherForCurrentLocation();
-        for (int i = 0; i < cities.size(); i++) {
-            getWeatherForNewCity(cities.get(i));
-        }
+        for (String city : cities)
+            getWeatherForNewCity(city);
     }
 
     public void displayMap(String cityName) {
 
-        // Map point based on address
         // Build the intent
         // Uri location = Uri.parse("geo:0,0?q=1600+Amphitheatre+Parkway,+Mountain+View,+California");
         Uri location = Uri.parse("geo:0,0?q=" + cityName);
@@ -269,8 +290,7 @@ implements View.OnClickListener {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
+                != PackageManager.PERMISSION_GRANTED) {ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
             return;
         }
@@ -357,11 +377,17 @@ implements View.OnClickListener {
         for (int i = childCount-1; i > 1; i--) {
             tableL.removeViewAt(i);
         }
+        citiesOnScreen.clear();
         Log.d(LOGCAT_TAG, "Remove, Table child count: " + tableL.getChildCount());
 
     }
+
     // Duplicate all widgets that are required to add a new city
     public void addCityWidgets(WeatherDataModel weather) {
+
+        // Skip if already on screen
+        for (String city : citiesOnScreen)
+            if (city.equals(weather.getCity().toUpperCase())) return;
 
         // Create 1st Row
         TableRow tableRow1 = new TableRow(this);
@@ -388,14 +414,23 @@ implements View.OnClickListener {
                                             }
                                         });
 
-                // Add to array if not in array
+        // Add to cities array if not in array
         boolean notFound = true;
         for (String city : cities) {
             if (city.equals(weather.getCity().toUpperCase())) notFound = false;
         }
-        if (notFound)
+        if (notFound) {
             cities.add(weather.getCity().toUpperCase());
+        }
 
+        // Add to cities on screen array if not in array (to avoid duplicates)
+        boolean notFoundOnScreen = true;
+        for (String city : citiesOnScreen) {
+            if (city.equals(weather.getCity().toUpperCase())) notFoundOnScreen = false;
+        }
+        if (notFoundOnScreen) {
+            citiesOnScreen.add(weather.getCity().toUpperCase());
+        }
         // Temperature toggle between c/f
         ImageButton buttonTemp = new ImageButton(this);
         ImageButton ibTemp = findViewById(R.id.buttonTempL);
